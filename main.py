@@ -71,7 +71,6 @@ def show_task():
     return render_template('show_task.html',tasks=tasks, current_user=current_user)
 
 @app.route('/add_task',methods=['GET','POST'])
-@login_required
 def add_task():
     form = NewTaskForm()
     if form.validate_on_submit():
@@ -106,24 +105,23 @@ def register():
         email=form.email.data
         password=form.password.data
         confirm_password=form.password.data
-
-        if not User.query.filter_by(email=email).first():
+        user=User.query.filter_by(email=email).first()
+        if not user:
             if password==confirm_password:
+                hashed_pw=bcrypt.generate_password_hash(password,10)
                 new_user=User(
                     email=email,
-                    password=bcrypt.generate_password_hash(password,10)
+                    password=hashed_pw
                 )
                 db.session.add(new_user)
                 db.session.commit()
                 flash('sign up successfully')
-                print(email)
-                return redirect(url_for('login'))
+                login_user(new_user)
             else:
                 flash('Two passwords do not match.')
         else:
             flash('The account exists.')
             return redirect(url_for('login'))
-
     return render_template('register.html', form=form)
 
 @app.route('/login',methods=['GET','POST'])
@@ -135,11 +133,10 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user:
             if bcrypt.check_password_hash(user.password,password):
-                flash('Correct credentials.')
                 login_user(user)
             else:
                 flash(f"incorrect password!")
-                return redirect(url_for('login',current_user=current_user))
+                return redirect(url_for('login', current_user=current_user))
         else:
             flash(f"The account doesnt exist, please sign up first.")
             return redirect(url_for('register'))
