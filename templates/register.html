@@ -30,6 +30,7 @@
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item"><a class="nav-link" href="{{url_for('add_task')}}">Add Tasks</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{url_for('show_task')}}">Show Tasks</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{url_for('login')}}">Login</a></li>
 
                     </ul>
                 </div>
@@ -43,6 +44,12 @@
                 <div class="cloud-center">
                     <div class="text-center">
                           <h1>Register</h1>
+                        {% if user: %}
+                        <h4>You've registered. Please log in.</h4>
+                        {% else: %}
+                        <h4>Please register an account.</h4>
+                        {% endif %}
+
                         {{wtf.quick_form(form)}}
 
                     </div>

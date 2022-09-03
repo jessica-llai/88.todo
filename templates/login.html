@@ -42,7 +42,12 @@
 
                 <div class="cloud-center">
                     <div class="text-center">
-                          <h1>Register</h1>
+                          <h1>Account Login</h1>
+                        {% if not current_user: %}
+                        <h4>The account does not exist. Please register first.</h4>
+                        {% else: %}
+                        <h4>Please Login.</h4>
+                        {% endif %}
                         {{wtf.quick_form(form)}}
 
                     </div>

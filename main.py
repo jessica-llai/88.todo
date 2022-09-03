@@ -5,16 +5,18 @@ from wtforms.validators import DataRequired
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 import os
-from flask_login import LoginManager, UserMixin, login_user, current_user, login_required
-from datetime import datetime
+from flask_login import LoginManager, UserMixin, login_user, current_user, login_required, logout_user
+from flask_bcrypt import Bcrypt
 
 
 app=Flask(__name__)
+Bootstrap(app)
 SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
 login_manager=LoginManager()
 login_manager.init_app(app)
-Bootstrap(app)
+bcrypt=Bcrypt(app)
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///task.db'
 db=SQLAlchemy(app)
@@ -60,15 +62,16 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', current_user=current_user)
 
 
 @app.route('/show_task')
 def show_task():
     tasks = db.session.query(Task).all()
-    return render_template('show_task.html',tasks=tasks)
+    return render_template('show_task.html',tasks=tasks, current_user=current_user)
 
 @app.route('/add_task',methods=['GET','POST'])
+@login_required
 def add_task():
     form = NewTaskForm()
     if form.validate_on_submit():
@@ -84,10 +87,11 @@ def add_task():
         db.session.add(new_task)
         db.session.commit()
         return redirect(url_for('home'))
-    return render_template('add_task.html',form=form)
+    return render_template('add_task.html',form=form, current_user=current_user)
 
 
 @app.route('/delete-task/<int:task_id>', methods=['GET','POST'])
+@login_required
 def delete_task(task_id):
     task=Task.query.get(task_id)
     db.session.delete(task)
@@ -102,16 +106,24 @@ def register():
         email=form.email.data
         password=form.password.data
         confirm_password=form.password.data
-        if password==confirm_password:
-            new_user=User(
-                email=email,
-                password=password
-            )
-            db.session.add(new_user)
-            db.session.commit()
-            flash('sign up successfully')
-            print(email)
+
+        if not User.query.filter_by(email=email).first():
+            if password==confirm_password:
+                new_user=User(
+                    email=email,
+                    password=bcrypt.generate_password_hash(password,10)
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                flash('sign up successfully')
+                print(email)
+                return redirect(url_for('login'))
+            else:
+                flash('Two passwords do not match.')
+        else:
+            flash('The account exists.')
             return redirect(url_for('login'))
+
     return render_template('register.html', form=form)
 
 @app.route('/login',methods=['GET','POST'])
@@ -122,18 +134,25 @@ def login():
         password=form.password.data
         user = User.query.filter_by(email=email).first()
         if user:
-            if password==user.password:
+            if bcrypt.check_password_hash(user.password,password):
+                flash('Correct credentials.')
                 login_user(user)
             else:
                 flash(f"incorrect password!")
-                return redirect(url_for('login'))
+                return redirect(url_for('login',current_user=current_user))
         else:
             flash(f"The account doesnt exist, please sign up first.")
             return redirect(url_for('register'))
-        return redirect(url_for('show_task'))
+        return redirect(url_for('show_task',current_user=current_user))
     return render_template('login.html',form=form)
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True)
 
 

@@ -11717,3 +11717,10 @@ color: black;
 
 #footer{
 text-align:center;}
+
+
+table,th,td{
+border: 1px solid white}
+th, td {
+  background-color: #CFD2CF;
+}

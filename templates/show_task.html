@@ -28,6 +28,10 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto">
+                        {% if not current_user.is_authenticated: %}
+                        <li class="nav-item"><a class="nav-link" href="{{url_for('register')}}">Register</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{url_for('login')}}">Login</a></li>
+                        {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{url_for('add_task')}}">Add Tasks</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{url_for('show_task')}}">Show Tasks</a></li>
 
@@ -39,22 +43,31 @@
 
             <div class="container2 px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
                 <img src="{{url_for('static',filename='assets/img/todobg.png')}}" style="width:100% height:50%">
-
                 <div class="cloud-center">
                     <div class="text-center">
                           <h1>My To Do</h1>
-                            <h2 class="text-white-50 mx-auto mt-2 mb-5">
-                            {% for task in tasks: %}
-                              <h3>{{task.date}}
-                                  <a href="{{url_for('delete_task',task_id=task.id)}}"><i class="fa fa-check" aria-hidden="true"></i></a>
-                              </h3>
+<!--                            <h2 class="text-white-50 mx-auto mt-2 mb-5">-->
+<!--                            </h2>-->
+                        <table>
+{% for task in tasks: %}
+                            <tr>
+                                <th>Date</th>
+                                <th>Task</th>
+                                <th>Location</th>
+                                <th>Finish</th>
+                            </tr>
 
-                            <ul>
-                            <li>Task:{{task.task}}</li>
-                            <li>Location:{{task.location}}</li>
-                            </ul>
+                            <tr>
+                                <td>{{task.date}}</td>
+                                <td>{{task.task}}</td>
+                                <td>{{task.location}}</td>
+                                <td><a href="{{url_for('delete_task',task_id=task.id)}}"><i class="fa fa-check" aria-hidden="true"></i></a>
+</td>
+                            </tr>
                             {% endfor %}
-                            </h2>
+                        </table>
+
+
 
                     </div>
                 </div>
