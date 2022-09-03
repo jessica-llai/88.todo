@@ -31,6 +31,8 @@
                         {% if not current_user.is_authenticated: %}
                         <li class="nav-item"><a class="nav-link" href="{{url_for('register')}}">Register</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{url_for('login')}}">Login</a></li>
+                        {% else: %}
+                        <li class="nav-item"><a class="nav-link" href="{{url_for('logout')}}">Logout</a></li>
                         {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{{url_for('add_task')}}">Add Tasks</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{url_for('show_task')}}">Show Tasks</a></li>
@@ -49,14 +51,14 @@
 <!--                            <h2 class="text-white-50 mx-auto mt-2 mb-5">-->
 <!--                            </h2>-->
                         <table>
-{% for task in tasks: %}
+
                             <tr>
                                 <th>Date</th>
                                 <th>Task</th>
                                 <th>Location</th>
                                 <th>Finish</th>
                             </tr>
-
+                            {% for task in tasks: %}
                             <tr>
                                 <td>{{task.date}}</td>
                                 <td>{{task.task}}</td>
