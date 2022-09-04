@@ -53,7 +53,6 @@ class NewTaskForm(FlaskForm):
 class RegistrationForm(FlaskForm):
     email = StringField('Email',validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password=PasswordField('Confirm Password', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class LoginForm(FlaskForm):
