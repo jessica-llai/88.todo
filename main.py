@@ -12,15 +12,18 @@ from flask_bcrypt import Bcrypt
 app=Flask(__name__)
 Bootstrap(app)
 SECRET_KEY = os.urandom(32)
-app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 login_manager=LoginManager()
 login_manager.init_app(app)
 bcrypt=Bcrypt(app)
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///task.db'
+# connect to DB
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','sqlite:///task.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app)
 
+
+# create DB
 class Task(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     date = db.Column(db.String, nullable=False)
@@ -38,6 +41,7 @@ class User(UserMixin, db.Model):
 db.create_all()
 
 
+# form
 class NewTaskForm(FlaskForm):
     date = StringField('Date',validators=[DataRequired()])
     task = StringField('Task',validators=[DataRequired()])
