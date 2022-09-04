@@ -7,18 +7,19 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from flask_login import LoginManager, UserMixin, login_user, current_user, login_required, logout_user
 from flask_bcrypt import Bcrypt
+import psycopg2
 
 
 app=Flask(__name__)
 Bootstrap(app)
-SECRET_KEY = os.urandom(32)
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 login_manager=LoginManager()
 login_manager.init_app(app)
 bcrypt=Bcrypt(app)
 
 # connect to DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL','sqlite:///task.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL1','sqlite:///task.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app)
 
