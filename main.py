@@ -1,5 +1,6 @@
 from flask import Flask, url_for, flash, redirect, render_template, request
 from flask_wtf import FlaskForm
+from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms import StringField, DateField,SubmitField, PasswordField
 from wtforms.validators import DataRequired
 from flask_bootstrap import Bootstrap
@@ -105,25 +106,26 @@ def delete_task(task_id):
 
 @app.route('/register',methods=['GET','POST'])
 def register():
-    form=RegistrationForm()
+    form = RegistrationForm()
     if form.validate_on_submit():
         email=form.email.data
         password=form.password.data
-        confirm_password=form.password.data
         user=User.query.filter_by(email=email).first()
         if not user:
-            if password==confirm_password:
-                hashed_pw=bcrypt.generate_password_hash(password,10)
-                new_user=User(
+            hashed_pw = generate_password_hash(
+                password,
+                method='pbkdf2:sha256',
+                salt_length=8
+            )
+            new_user=User(
                     email=email,
                     password=hashed_pw
                 )
-                db.session.add(new_user)
-                db.session.commit()
-                flash('sign up successfully')
-                login_user(new_user)
-            else:
-                flash('Two passwords do not match.')
+            db.session.add(new_user)
+            db.session.commit()
+            flash('sign up successfully')
+            login_user(new_user)
+            return redirect(url_for('show_task'))
         else:
             flash('The account exists.')
             return redirect(url_for('login'))
@@ -131,21 +133,20 @@ def register():
 
 @app.route('/login',methods=['GET','POST'])
 def login():
-    form=LoginForm()
+    form = LoginForm()
     if form.validate_on_submit():
-        email=form.email.data
-        password=form.password.data
+        email = form.email.data
+        password = form.password.data
         user = User.query.filter_by(email=email).first()
-        if user:
-            if bcrypt.check_password_hash(user.password,password):
-                login_user(user)
-            else:
-                flash(f"incorrect password!")
-                return redirect(url_for('login', current_user=current_user))
-        else:
+        if not user:
             flash(f"The account doesnt exist, please sign up first.")
             return redirect(url_for('register'))
-        return redirect(url_for('show_task',current_user=current_user))
+        elif not check_password_hash(user.password,password):
+            flash(f"incorrect password!")
+            return redirect(url_for('login', current_user=current_user))
+        else:
+            login_user(user)
+            return redirect(url_for('show_task',current_user=current_user))
     return render_template('login.html',form=form)
 
 @app.route('/logout')
